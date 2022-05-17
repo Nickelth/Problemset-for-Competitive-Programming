@@ -1,0 +1,142 @@
+题目链接：https://codeforces.com/contest/1679/problem/D
+
+题目大意：给出一张有向图，从一个点走k - 1步（即选k个点），使路径上点权的最大值最小，输出这个值；如果走不到k - 1步，则输出-1；
+
+题解：
+
+首先注意到：如果我们可以构造出一条最大点权不大于x的路径，那么我们也可以构造出一条最大点权不大于x + 1的路径，即：答案具有单调性；
+
+二分最大点权，然后检查能否构造出这样一条路径；
+
+首先，抹掉图中所有点权大于x的点，此时，若图中有环，则有解，否则，用拓扑排序进行dp，维护以各点为终点的最长路径，然后将最大值与x比较。
+
+代码：
+
+#include<bits/stdc++.h>
+#define ll long long
+#define ull unsigned long long
+#define debug(x) cout << #x << " = " << (x) << endl
+#define IOS ios::sync_with_stdio(false),cin.tie(0),cout.tie(0)
+#define INF 0x3f3f3f3f3f3f3f3f
+#define pll pair<ll,ll>
+#define ld long double
+#define pb push_back
+using namespace std;
+const ll N = 2e5 + 5;
+const ll M = 105;
+ll n,m,k;
+ll a[N];
+ll del[N];
+ll deg[N];
+ll tmpd[N];
+vector<ll>g[N];
+ll dp[N];
+/*
+3 2 3
+1 2 3
+1 2
+2 3
+*/
+int check(ll x)
+{
+	//debug(x);
+	ll tot = 0;
+	for(ll i = 1; i <= n; i ++ )tmpd[i] = deg[i];
+	for(ll i = 1; i <= n; i ++ )
+	{
+		if(a[i] > x)
+		{
+			del[i] = 1;
+			for(auto j : g[i])
+			{
+				tmpd[j] -- ;
+			}
+		}
+		else
+		{
+			del[i] = 0;
+			tot ++ ;
+		}
+		dp[i] = 0;
+	}
+	queue<ll>q;
+	for(ll i = 1;i <= n; i ++ )
+	{
+		if(!del[i] && tmpd[i] == 0)
+		{
+			q.push(i);
+		}
+	}
+	ll cnt = 0;
+	while(!q.empty())
+	{
+		ll t = q.front();
+		q.pop();
+		cnt ++ ;
+		for(auto i : g[t])
+		{
+			if(!del[i])
+			{
+				tmpd[i] -- ;
+				if(tmpd[i] == 0)
+				{
+					q.push(i);
+				}
+				dp[i] = max(dp[i], dp[t] + 1);
+			}
+		}
+	}
+	//debug(cnt);
+	if(cnt < tot)
+	{
+		return 1;
+	}
+	else
+	{
+		ll mm = -1;
+		for(ll i = 1; i <= n; i ++ )
+		{
+			if(!del[i])
+				mm = max(mm, dp[i]);
+		}
+		//debug(mm);
+		return mm >= k - 1;
+	}
+}
+int main()
+{
+	IOS;
+	cin >> n >> m >> k;
+	for(ll i = 1; i <= n; i ++ )
+	{
+		cin >> a[i];
+	}
+	while(m -- )
+	{
+		ll u,v;
+		cin >> u >> v;
+		g[u].pb(v);
+		deg[v] ++ ;
+	}
+	ll l = 1, r = 1e9 + 5;
+	while(l < r)
+	{
+		ll mid = (l + r) / 2;
+		if(check(mid))
+		{
+			r = mid;
+		}
+		else
+		{
+			l = mid + 1;
+		}
+	}
+	if(check(l))
+	{
+		cout << l << endl;
+	}
+	else
+	{
+		cout << -1 << endl;
+	}
+}
