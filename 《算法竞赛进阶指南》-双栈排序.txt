@@ -1,0 +1,207 @@
+题目链接：https://www.acwing.com/problem/content/155/
+
+题目大意：
+
+给出一个排列，要求用两个栈进行操作使其有序，并输出字典序最小的操作序列，操作有四种：
+
+a.压入栈1
+
+b.弹出栈1
+
+c.压入栈2
+
+d.弹出栈2
+
+题解：
+
+如果每个数分配给哪个栈被确定了，那么单独看每个栈，操作的序列也是确定的：
+
+如果后面的数没有比当前栈中元素更小的数，则需要弹出当前栈顶，否则要继续将当前数压入栈；
+
+在两个栈的情况下，当每个数分配给哪个栈被确定，我们可以通过调整交替输出的顺序来令字典序最小；
+
+那么，如何确定每个数分配给哪个栈呢？
+
+有这样一条性质：
+
+考虑下标为i,j的两个数（i < j），值分别为a[i],a[j],两者不能放入同一个栈当且仅当：
+
+存在一个下标为k的数，三者存在关系：i < j < k 且 a[k] < a[i] < a[j];
+
+证明：
+
+充分性：
+
+如果有三个数满足所给关系，那么当a[i]，a[j]被压入栈中时，由于数列后面有更小的a[k]，所以两个数压入后均不能立刻从栈中弹出；
+
+而当两数需要进行弹出时，必然会先弹出更大的a[j]，然后才是a[i]，形成逆序对，故两数不能放入同一个栈中；
+
+必要性：
+
+来证逆否命题。如果a[i]和a[j]不满足上述条件，那么，当a[j]入栈时，由于后面不存在更小的数，因此a[i]可以提前出栈，不会出现矛盾，二者可以放入同一个栈。
+
+那么，我们根据这个关系为元素两两建边，接下来判断得到的图是不是二分图即可，根据二分图的染色情况，我们就可以为每个数分配其所入的栈。
+
+代码：
+
+#include<bits/stdc++.h>
+#define ll long long
+#define ull unsigned long long
+#define debug(x) cout << #x << " = " << (x) << endl
+#define IOS ios::sync_with_stdio(false),cin.tie(0),cout.tie(0)
+#define INF 0x3f3f3f3f3f3f3f3f
+#define pll pair<ll,ll>
+#define ld long double
+#define pb push_back
+using namespace std;
+const ll N = 2e5 + 5;
+const ll M = 205;
+ll n;
+ll a[N];
+ll f[N];
+vector<ll>g[N];
+ll color[N];
+ll dfs(ll fa, ll cur, ll col)
+{
+	color[cur] = col;
+	for(auto i : g[cur])
+	{
+		if(i != fa)
+		{
+			if(color[i] == col)return 0;
+			if(color[i] == -1 && dfs(cur, i, 1 - col) == 0)return 0;
+		}
+	}
+	return 1;
+}
+int main()
+{
+	IOS;
+	cin >> n;
+	for(ll i = 1; i <= n; i ++ )
+	{
+		cin >> a[i];
+		color[i] = -1;
+	}
+	f[n + 1] = INF;
+	for(ll i = n; i >= 1; i -- )
+	{
+		f[i] = min(f[i + 1], a[i]);
+	}
+	for(ll i = 1; i <= n; i ++ )
+	{
+		for(ll j = i + 1; j <= n; j ++ )
+		{
+			if(a[j] > a[i] && f[j + 1] < a[i])
+			{
+				g[i].pb(j);
+				g[j].pb(i);
+			}
+		}
+	}
+	int f = 0;
+	for(ll i = 1; i <= n; i ++ )
+	{
+		if(color[i] == -1)
+		{
+			if(!dfs(-1, i, 0)){
+				f = 1;
+				break;	
+			}
+		}
+	}
+	
+	if(f)
+	{
+		cout << 0 << endl;
+		return 0;	
+	}
+	stack<ll>s1,s2;
+	vector<char>ans;
+	int c = color[1];
+	ll cur = 1;
+	for(ll i = 1; i <= n; i ++ )
+	{
+		if(color[i] == c)
+		{
+			while(!s1.empty() && s1.top() == cur)//入第一个栈前，第一个栈该出的要出掉 
+			{
+				s1.pop();
+				ans.pb('b');
+				cur ++ ;
+			}
+			// 如果a[i]入栈的话, 发现无法满足，此时就要考虑将第二个栈的元素pop
+            if(!s1.empty() && a[i] > s1.top()) 
+            {
+	            while (!s1.empty() && a[i] > s1.top())
+	                if (!s1.empty() && s1.top() == cur)
+	                {
+	                    s1.pop();
+	                    ans.pb('b');
+	                    cur ++ ;
+	                }
+	                else if (!s2.empty() && s2.top() == cur)
+	                {
+	                    s2.pop();
+	                    ans.pb('d');
+	                    cur ++ ;
+	                }
+	                else break;
+            }
+
+			s1.push(a[i]);
+			ans.pb('a');
+		}
+		else
+		{
+			while(1)//入第二个栈前该出的也要先出掉 
+			{
+				if(!s1.empty() && s1.top() == cur)//b比c字典序小，所以栈1里的也要出 
+				{
+					s1.pop();
+					ans.pb('b');
+					cur ++ ;
+				}
+				else if(!s2.empty() && s2.top() == cur)
+				{
+					s2.pop();
+					ans.pb('d');
+					cur ++ ;
+				}
+				else
+				{
+					break;
+				}
+			}
+			s2.push(a[i]);
+			ans.pb('c');
+		}
+		
+	}
+	while(1)//处理剩下的 
+	{
+		if(!s1.empty() && s1.top() == cur)
+		{
+			s1.pop();
+			ans.pb('b');
+			cur ++ ;
+		}
+		else if(!s2.empty() && s2.top() == cur)
+		{
+			s2.pop();
+			ans.pb('d');
+			cur ++ ;
+		}
+		else
+		{
+			break;
+		}
+	}
+	for(auto i : ans)
+	{
+		cout << i << ' ';
+	}
+
+}
+
+
