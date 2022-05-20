@@ -1,0 +1,147 @@
+题目链接：https://codeforces.com/problemset/problem/1426/E
+
+题目大意：进行n轮剪刀石头布，已知两人各出多少石头、剪刀、布，但是顺序不确定，问第一个人最少赢几次、最多赢几次？
+
+题解：
+
+这里用a代表第一个人，b代表第二个人，1、2、3代表石头剪刀布；
+
+最多赢的次数很好计算，min(a[1], b[2]) + min(a[2], b[3]) + min(a[3], b[1])；
+
+最少赢的次数，我们要追求最多的输与平局，满足这二者的组合有6种：
+
+(a[1],b[1])
+
+(a[1],b[3])
+
+(a[2],b[1])
+
+(a[2],b[2])
+
+(a[3],b[2])
+
+(a[3],b[3])
+
+我们可以枚举其全排列，然后计算答案，参照代码1；
+
+但是有一个未解决的小问题：在开始使用某个组合后，是否将其用完一定是最优的？
+
+比如，当我们开始用(a[1],b[1])后，能否在b[1]还没用完时中断，转而使用(a[2],b[1])，并用类似的策略取得更优的答案？
+
+当b[1] >= a[1] + a[2]时，显然不会发生变化，a[1]和a[2]都是可以换完的；当b[1] < a[1] + a[2]时，始终可以将b[1]换完，所以也不会发生变化。
+
+此外，还有另一种思路：
+
+首先我们证明，在输局、平局全部进行后，两者所拥有的数量要么都为0，要么各自剩余一种，且剩余的这些进行对局一定是alice赢；
+
+都为0的情况是显然的；
+
+如果某一方剩余一种而另一方剩余另一种，比如，alice剩余了石头，那么无论bob剩余的是石头+剪刀、石头+布、剪刀+布，都可以继续与alice的石头进行抵消；
+
+所以如果没有完全抵消，最后的局面一定是双方各剩下一种；
+
+讨论一下alice最后剩余的情况：
+
+如果剩余的是a[1]，那么bob剩余的则是b[1]，且有a[1] == b[2]，这个数量就是alice赢的数量；
+
+那么，我们让这个数量尽量小，也就是令ans = b[2] - a[2] - a[3] 或 a[1] - b[1] - b[3];
+
+如果剩余的是a[2]，a[3]，讨论过程也是一样的。
+
+最后，三种情况的答案分别是b[2] - a[2] - a[3]，b[3] - a[1] - a[3]，b[1] - a[1] - a[2]；
+
+再来证明这三个数中最多只有一个正数：
+
+设b[2] - a[2] - a[3] > 0 ，则 b[2] > a[2] + a[3]
+
+由于b[1] + b[2] + b[3] == a[1] + a[2] + a[3] == n
+
+故b[1] + b[3] < a[1]
+
+所以b[1] < a[1] + a[2] 且 b[3] < a[1] + a[3]
+
+证毕
+
+所以答案从三者中选一个就好，参照代码2.
+
+
+
+代码1：
+
+#include<bits/stdc++.h>
+#define INF 0x3f3f3f3f3f3f3f3f
+#define ll long long
+#define pll pair<ll,ll>
+#define pb push_back
+using namespace std;
+ll n;
+vector<ll>a;
+vector<ll>b;
+int main()
+{
+	cin >> n;
+	a.resize(3);
+	b.resize(3);
+	for(ll i = 0; i < 3; i ++ )
+	{
+		cin >> a[i];
+	}
+	for(ll i = 0; i < 3; i ++ )
+	{
+		cin >> b[i];
+	}
+	
+	ll mm = min(a[0], b[1]) + min(a[1], b[2]) + min(a[2], b[0]);
+	ll mi = INF;
+	vector<pll>ord;
+	ord.pb({0,0});
+	ord.pb({0,2});
+	ord.pb({1,0});
+	ord.pb({1,1});
+	ord.pb({2,1});
+	ord.pb({2,2});
+	do{
+		vector<ll>ta = a,tb = b;
+		for(auto i : ord)
+		{
+			ll x = i.first;
+			ll y = i.second;
+			ll cnt = min(ta[x], tb[y]);
+			ta[x] = max(0ll, ta[x] - cnt);
+			tb[y] = max(0ll, tb[y] - cnt);
+		}
+		mi = min(mi, min(ta[0],tb[1]) + min(ta[1],tb[2]) + min(ta[2],tb[0]));
+	}while(next_permutation(ord.begin(),ord.end()));
+	cout << mi << ' ' << mm << endl;
+}
+
+代码2：
+
+#include<bits/stdc++.h>
+#define INF 0x3f3f3f3f3f3f3f3f
+#define ll long long
+#define pll pair<ll,ll>
+#define pb push_back
+using namespace std;
+ll n;
+vector<ll>a;
+vector<ll>b;
+int main()
+{
+	cin >> n;
+	a.resize(3);
+	b.resize(3);
+	for(ll i = 0; i < 3; i ++ )
+	{
+		cin >> a[i];
+	}
+	for(ll i = 0; i < 3; i ++ )
+	{
+		cin >> b[i];
+	}
+	
+	ll mm = min(a[0], b[1]) + min(a[1], b[2]) + min(a[2], b[0]);
+	ll mi = max(b[0] - a[0] - a[1], max(b[1] - a[1] - a[2], b[2] - a[2] - a[0]));
+	mi = max(0ll, mi);
+	cout << mi << ' ' << mm << endl;
+}
