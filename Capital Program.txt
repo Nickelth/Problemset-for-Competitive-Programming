@@ -1,0 +1,184 @@
+题目链接：https://ac.nowcoder.com/acm/contest/35146/B
+
+题目大意：从一颗树中选择k个连通的节点，定义一个节点的价值是该节点到这个连通块的距离，问如何选取这k个点，可以使所有节点价值的最大值最小。
+
+题解：
+
+注意到树的直径有这样一条性质：树上任意节点可以到达的最远节点一定是树的直径的端点。
+
+由此，我们可以找到树的直径，然后靠端点来计算所有节点能到达的最远距离，选取其中最短的作为起点；
+
+然后从起点开始，贪心地选取其他k-1个节点。
+
+贪心的过程是，通过dfs维护以起点为根时，每个节点的子树中的最远节点距离和当前节点距离根的高度，然后每次选取“当前可以到达的最远距离最远”的节点，即两个值的差值，用优先队列维护即可。
+
+代码：
+
+#include<bits/stdc++.h>
+using namespace std;
+#define ll long long
+#define debug(x) cout << #x << " = " << x << endl;
+#define IOS ios::sync_with_stdio(false),cin.tie(0),cout.tie(0)
+const ll N = 2e5 + 5;
+const ll M = 100 + 5;
+#define pll pair<ll,ll>
+#define ld long double
+#define pb push_back
+#define INF 0x3f3f3f3f3f3f3f3f
+ll n,k;
+vector<ll>g[N];
+ll st = 0;
+ll mm = INF;
+ll v[N];
+ll sz[N];
+ll dep[N];
+ll mdep[N];
+int in[N];
+ll d1[N],d2[N];
+ll ans = 0;
+ll t1 = 0, t2 = 0;
+ll tmp = 0;
+void dfs(ll fa,ll x,ll step,ll t)
+{
+	for(auto i : g[x])
+	{
+		if(i != fa)
+		{
+			dfs(x,i,step + 1,t);
+		}
+	}
+	if(step > tmp)
+	{
+		tmp = step;
+		if(t == 0)
+		{
+			t1 = x;
+		}
+		else
+		{
+			t2 = x;
+		}
+	}
+}
+void cal1(ll fa,ll x,ll step)
+{
+	for(auto i : g[x])
+	{
+		if(i != fa)
+		{
+			d1[i] = step + 1;
+			cal1(x,i,step + 1);
+		}
+	}
+}
+void cal2(ll fa,ll x,ll step)
+{
+	for(auto i : g[x])
+	{
+		if(i != fa)
+		{
+			d2[i] = step + 1;
+			cal2(x,i,step + 1);
+		}
+	}
+}
+void zhij()
+{
+	tmp = 0;
+	dfs(-1,1,0,0);
+	tmp = 0;
+	dfs(-1,t1,0,1);
+	//debug(t1);
+	//debug(t2);
+	cal1(-1,t1,0);
+	cal2(-1,t2,0);
+	ll mm = INF;
+	for(ll i = 1; i <= n; i ++ )
+	{
+		if(max(d1[i],d2[i]) < mm)
+		{
+			mm = max(d1[i],d2[i]);
+			st = i;
+		}
+	}
+}
+void dfs2(ll fa,ll x)
+{
+	mdep[x] = dep[x];
+	for(auto i :g[x])
+	{
+		if(i != fa)
+		{
+			dep[i] = dep[x] + 1;
+			dfs2(x,i);
+			mdep[x] = max(mdep[x],mdep[i]);
+		}
+	}
+}
+void cal()
+{
+	priority_queue<pll,vector<pll>,less<pll> >heap;
+	heap.push({0,st});
+	in[st] = 1;
+	ll cnt = 0;
+	while(cnt < k)
+	{
+		auto t = heap.top();
+
+		heap.pop();
+		in[t.second] = 1;
+		cnt ++ ;
+		for(auto i : g[t.second])
+		{
+			if(!in[i])
+			{
+				heap.push({mdep[i] - dep[t.second],i});
+			}
+		}
+	}
+}
+void dfs3(ll fa,ll x,ll d)
+{
+	for(auto i : g[x])
+	{
+		if(i != fa)
+		{
+			if(in[i])
+			{
+				ans = max(ans, d);
+				dfs3(x,i,d);
+			}
+			else
+			{
+				ans = max(ans,d + 1);
+				dfs3(x,i,d + 1);
+			}
+			
+		}
+	}
+}
+
+int main()
+{
+	IOS;
+	cin >> n >> k;
+	for(ll i = 1; i < n; i ++ )
+	{
+		ll u,v;
+		cin >> u >> v;
+		g[u].pb(v);
+		g[v].pb(u);
+	}
+	//dfs(-1,1);
+	zhij();
+	dfs2(-1,st);
+	cal();
+	dfs3(-1,st,0);
+	/*debug(st);
+	for(ll i = 1;i <= n; i ++ )
+	{
+		debug(i);
+		debug(in[i]);
+	}*/
+	cout << ans << endl;
+}
