@@ -1,0 +1,165 @@
+题目链接：https://ac.nowcoder.com/acm/contest/35146/I
+
+题目大意：
+
+给出一个数n和一个按钮，第一次按按钮会随机生成一个[1,n]之间的数x，第二次会随机生成一个[1,x]间的数y，问生成数字1的期望次数？
+
+题解：
+
+解这道题前，首先需要知道调和数列如何求和。
+
+调和数列1 + 1/2 + 1/3 + ... + 1/n 和为 ln(n + 1) + Gamma，其中Gamma是欧拉常数,约等于0.577215.
+
+引理1：
+
+当x > 0时，x / (1 + x) < ln(1 + x) < x.
+
+证明：
+
+方法一：
+
+构造f(x) = ln(1 + x) - x，对其求导得f'(x) = 1 / (1 + x) - 1;
+
+显然f'(x)在区间[0,+inf)单调递减，x = 0时，f'(x) = 0,因此在区间(0,+inf)上有f(x) < f(0) = 0，故ln(1 + x) < x.
+
+构造g(x) = (1 + x)ln(1 + x) - x，对其求导得g'(x) = ln(1 + x)，g'(x)在区间[0,+inf)上单调递增且x = 0时g'(x) = 0.
+
+故g(x)在区间(0,+inf)上有g(x) > g(0) = 0，故x > ln(1 + x).
+
+得证.
+
+方法二：
+
+拉格朗日中值定理：
+
+若函数f(x)满足以下条件：
+
+（1）在[a,b]上连续；
+（2）在(a,b)内可导；
+则在(a,b)内至少存在一点t，使得：f'(t) = (f(b) - f(a)) / (b - a)；
+
+对函数f(t) = lnt 在[1,x + 1]上使用拉格朗日中值定理，有：
+
+x / t = ln(x + 1)， 1 < t < x + 1;
+
+则x > ln(x + 1) > x / (x + 1)；
+
+得证.
+
+引理2：
+
+令s = 1 + 1/2 + 1/3 + ... + 1/n，s/ln(n)的极限是1.
+
+证明：
+
+将x = 1/n带入引理1的不等式，可以得到：
+
+1/(n + 1) < ln(1 + (1 / n)) < 1/n.
+
+即1/(n + 1) < ln(n + 1) - ln(n) < 1/n.
+
+由：
+
+ln2 - ln1 < 1
+ln3 - ln2 < 1/2
+...
+ln(n + 1) - ln(n) < n
+
+相加可得：
+
+ln(n + 1) < s
+
+又：
+
+1/2 < ln2 - ln1
+1/3 < ln3 - ln2
+...
+1/n < ln(n) - ln(n - 1)
+
+相加可得：
+
+1/2 + 1/3 + ... + 1/n < ln(n)
+
+即：
+
+s < 1 + ln(n).
+
+综上有：
+
+ln(n + 1) < s < 1 + ln(n)
+
+即：
+
+ln(n + 1) / ln(n) < s / ln(n) < (1 + ln(n)) / ln(n)
+
+使用夹逼定理，显然s / ln(n)的极限是1.
+
+得证.
+
+令a(n) = 1 + 1/2 + 1/3 + ... + 1/n - ln(n)，
+
+a(n) - a(n - 1) = 1/(n + 1) - ln(1 + 1/n)，由于我们已经得到1/(n + 1) < ln(1 + 1/n)，故a(n)单调递减；
+
+又由于a(n) = s -ln(n) > ln(n + 1) - ln(n) = ln(1 + 1/n) > 0.故a(n)有下界.
+
+a(n)单调有界，故a(n)收敛.
+
+记Gamma = a(n) = s - ln(n)，得 s = Gamma + ln(n).
+
+得证.
+
+
+回到这道题目，令f[n]表示当前数字为n时的期望次数.
+
+f[n] = (f[1] + f[2] + ... + f[n]) / n + 1.
+
+移项得：
+
+nf[n] = f[1] + f[2] + ... + f[n] + n.
+
+(n - 1)f[n] = f[1] + f[2] + ... + f[n - 1] + n - 1.
+
+两式相减得：
+
+f[n] - f[n - 1] = 1 / (n - 1).
+
+令n = 2，得f[2] = 2.
+
+故f[n] = 2 + 1/2 + 1/3 + ... + 1/(n - 1).
+
+到这里就可以用调和数列求和公式求解了.
+
+代码：
+
+#include<bits/stdc++.h>
+using namespace std;
+#define ll long long
+#define debug(x) cout << #x << " = " << x << endl;
+#define IOS ios::sync_with_stdio(false),cin.tie(0),cout.tie(0)
+#define pll pair<ll,ll>
+#define ld long double
+#define pb push_back
+#define INF 0x3f3f3f3f3f3f3f3f
+const ll N = 1e7 + 5;
+const ll M = 100 + 5;
+const ld Gamma = 0.577215;
+ll n;
+ld f[N];
+int main()
+{
+	cin >> n;
+	cout <<fixed << setprecision(6);
+	if(n < N){
+	
+		f[1] = 1;
+		for(ll i = 2; i <= n; i ++ )
+		{
+			f[i] = f[i - 1] + 1.0 / (i - 1);
+		}
+		cout << f[n] << endl;
+	}
+	else
+	{
+		cout << 1.0 + Gamma + log(n - 1) << endl;
+	}
+}
