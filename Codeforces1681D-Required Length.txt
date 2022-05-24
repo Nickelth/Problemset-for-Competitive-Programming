@@ -1,0 +1,59 @@
+题目链接：https://codeforces.com/contest/1681/problem/D
+
+题目大意：
+
+给出一个数n和一个数x，每次从x的数位里挑出一个数y，令x等于x*y，求令x的位数等于n的最小操作次数.
+
+题解：
+
+本题的关键在于观察到：
+
+由于每次选取的y不超过9，因此最终的结果形式应该是x * (2 ^ a) * (3 ^ b) * (5 ^ c) * (7 ^ d).
+
+且，在1e19的范围内，a不超过63，b不超过39，c不超过27，d不超过22，因此状态空间的规模约为1e6，可以使用bfs解决.
+
+代码：
+
+#include<bits/stdc++.h>
+using namespace std;
+#define ll long long
+#define debug(x) cout << #x << " = " << x << endl;
+#define IOS ios::sync_with_stdio(false),cin.tie(0),cout.tie(0)
+#define pll pair<ll,ll>
+#define ld long double
+#define pb push_back
+#define INF 0x3f3f3f3f3f3f3f3f
+const ll N = 2e5 + 5;
+const ll M = 100 + 5;
+ll n,x;
+int main()
+{
+	cin >> n >> x;
+	queue<ll>q;
+	map<ll,ll>dis;
+	q.push(x);
+	dis[x] = 0;
+	while(!q.empty())
+	{
+		ll t = q.front();
+		q.pop();
+		string s = to_string(t);
+		if(s.size() == n)
+		{
+			cout << dis[t] << endl;
+			return 0;
+		}
+		for(auto i : s)
+		{
+			ll cur = i - '0';
+			if(cur == 0)continue;
+			if(!dis.count(cur * t))
+			{
+				dis[cur * t] = dis[t] + 1;
+				q.push(cur * t);
+			}
+		}
+	}
+	cout << -1 << endl;
+	
+}
