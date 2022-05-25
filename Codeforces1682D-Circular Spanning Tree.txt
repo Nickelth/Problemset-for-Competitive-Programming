@@ -1,0 +1,97 @@
+题目链接：https://codeforces.com/contest/1682/problem/D
+
+题目大意：
+
+将n个点顺时针排成一圈，给出一个长度为n的01串，要求将n个点构造成一棵树，串中为0的位置要求对应节点度数为偶数，为1则为奇数；树的边在圈内不能相交；
+
+题解：
+
+首先，全0串无解，因为一棵树至少有两个叶子节点；
+
+其次，1的个数为奇数也无解，因为一棵树的节点度数和为2n - 2，为偶数.
+
+接下来考虑如何构造.
+
+如果串值全为1，直接构造一颗星形树就好.
+
+找到一个值为0且前驱节点是1的节点st，发现去掉该节点的其余部分可以划分为[0...1][0...1][0...1]...的区间，那么对每个划分出的区间，令第一个0与st相连，第二个0与第一个0相连……以此类推，最后的1与前面一个0相连即可.
+
+可以发现，由于1的个数有偶数个，这样划分出的区间数也有偶数个，构造出的树一定满足度数要求，且树边不会在圈内相交.
+
+代码：
+
+#include<bits/stdc++.h>
+using namespace std;
+#define ll long long
+#define debug(x) cout << #x << " = " << x << endl;
+#define IOS ios::sync_with_stdio(false),cin.tie(0),cout.tie(0)
+#define pll pair<ll,ll>
+#define ld long double
+#define pb push_back
+#define INF 0x3f3f3f3f3f3f3f3f
+const ll N = 2e5 + 5;
+const ll M = 100 + 5;
+ll n;
+string s;
+int main()
+{
+	ll _;
+	cin >> _;
+	while(_ -- )
+	{
+		cin >> n >> s;
+		ll cnt = 0;
+		for(auto i : s)
+		{
+			if(i == '1')cnt ++ ;
+		}
+		if(cnt == 0 || cnt % 2 != 0)
+		{
+			cout << "NO" << endl;
+			continue;
+		}
+		cout << "YES" << endl;
+		ll st = -1;
+		for(ll i = 0; i < n; i ++ )
+		{
+			if(s[i] == '0' && s[(i - 1 + n) % n] == '1')
+			{
+				st = i;
+				break;
+			}
+		}
+		vector<pll>ans;
+		if(st == -1)
+		{
+			for(ll i = 2; i <= n; i ++ )
+			{
+				ans.pb({1,i});
+			}
+			for(auto i : ans)
+			{
+				cout << i.first << ' ' << i.second << endl;
+			}
+			continue;
+		}
+		
+		ll cur = (st + 1) % n;
+		while(cur != st)
+		{
+			ll pre = st;
+			while(s[cur] != '1')
+			{
+				ans.pb({pre,cur});
+				pre = cur;
+				cur = (cur + 1) % n;
+			}
+			ans.pb({pre,cur});
+			cur = (cur + 1) % n;
+		}
+		
+		
+		for(auto i : ans)
+		{
+			cout << i.first + 1 << ' ' << i.second + 1 << endl;
+		}
+	}
+}
