@@ -163,3 +163,4 @@ int main()
 		cout << 1.0 + Gamma + log(n - 1) << endl;
 	}
 }
+
