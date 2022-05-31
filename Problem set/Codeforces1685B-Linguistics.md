@@ -51,7 +51,7 @@ $x = 0 且 y = k 或 x > 0 且 y > 0 且 x + y <= k - 1;$
 吐槽：$Codeforces$的官方题解将这个逻辑写成了一套极其复杂的形式，折磨了我一下午。
 
 代码：
-```
+```cpp
 #include<bits/stdc++.h>
 using namespace std;
 #define ll long long
