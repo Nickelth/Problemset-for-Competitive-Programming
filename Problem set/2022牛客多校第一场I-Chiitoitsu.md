@@ -19,13 +19,10 @@
 令 $F_{i,j}$ 表示手里有 $i$ 张单牌，牌堆里有 $j$ 张牌时的获胜期望轮数，有：
 
 $$
-F_{i,j} = \left\{
-\begin{matrix}
-\frac{3}{j} * 1 + \frac{j - 3}{j} * (1 + F_{1,j - 1}),\ i = 1 \\
-\frac{3i}{j} * (1 + F_{i - 2,j - 1}) + \frac{j - 3i}{j} * (1 + F_{i,j - 1}),\ i > 1
-\end{matrix}
-\right.
+F_{i,j} = \frac{3}{j} * 1 + \frac{j - 3}{j} * (1 + F_{1,j - 1}),\ i = 1 \\
+F_{i,j} = \frac{3i}{j} * (1 + F_{i - 2,j - 1}) + \frac{j - 3i}{j} * (1 + F_{i,j - 1}),\ i > 1
 $$
+
 
 
 
