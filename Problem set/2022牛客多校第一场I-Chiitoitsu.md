@@ -26,8 +26,9 @@ F_{i,j} = \left\{
 \frac{3i}{j} * (1 + F_{i - 2,j - 1}) + \frac{j - 3i}{j} * (1 + F_{i,j - 1}),\ i > 1
 \end{matrix}
 \right.
-s
+
 $$
+
 
 
 代码：
