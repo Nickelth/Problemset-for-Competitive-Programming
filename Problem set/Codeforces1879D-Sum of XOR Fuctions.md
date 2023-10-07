@@ -3,9 +3,13 @@
 题目大意：
 
 给出一个 n 个数的数列 {a} ，求：
+
+
 $$
 \sum_{i=1}^{n}\sum_{j=1}^{n}f(l,r)\times(r - l + 1), f(l,r)=a_l\bigoplus a_{l+1} \bigoplus ... \bigoplus a_{r}
 $$
+
+
 题解：
 
 首先考虑按每一位分别求值，然后加和，这样问题转换为01串上的问题
